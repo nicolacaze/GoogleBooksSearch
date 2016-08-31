@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">GoogleBooks</string>
+
+    <string name="no_keyword">You did not type any keyword&#8230;</string>
+
+    <string name="search">What\'s on your mind?</string>
+
+    <string name="no_pages">No pages mentioned</string>
+
+    <string name="no_results">No results were found. Try searching for author or title.</string>
+</resources>
