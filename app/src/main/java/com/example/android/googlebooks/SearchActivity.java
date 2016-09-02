@@ -60,7 +60,7 @@ public class SearchActivity extends AppCompatActivity {
         userQuery = userInput.getText().toString();
 
         //Remove potential spaces from the keyword.
-        userQuery = userQuery.replace(" ", "");
+        userQuery = userQuery.replace(" ", "+");
 
         return userQuery;
     }

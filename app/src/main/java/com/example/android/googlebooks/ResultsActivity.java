@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -57,6 +58,9 @@ public class ResultsActivity extends AppCompatActivity {
 
         ListView booksListView = (ListView) findViewById(R.id.list);
 
+        //Set empty view message if no results are found.
+        booksListView.setEmptyView(findViewById(R.id.empty_list_view));
+
         BookAdapter adapter = new BookAdapter(this, books);
 
         booksListView.setAdapter(adapter);
@@ -92,8 +96,6 @@ public class ResultsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(ArrayList<Book> books) {
             if (books == null) {
-                ListView emptyListView = (ListView) findViewById(R.id.list);
-                emptyListView.setEmptyView(findViewById(R.id.empty_list_view));
                 return;
             }
             updateUi(books);
@@ -186,48 +188,53 @@ public class ResultsActivity extends AppCompatActivity {
 
             try {
                 JSONObject baseJSONResponse = new JSONObject(booksJSON);
-                JSONArray items = baseJSONResponse.getJSONArray("items");
+                if (baseJSONResponse.has("items")) {
+                    JSONArray items = baseJSONResponse.getJSONArray("items");
 
-                //We loop through the array to get all results from the JSON.
-                for (int i = 0; i < items.length(); i++) {
+                    //We loop through the array to get all results from the JSON.
+                    for (int i = 0; i < items.length(); i++) {
 
-                    JSONObject book = items.getJSONObject(i);
-                    JSONObject volumeInfo = book.getJSONObject("volumeInfo");
+                        JSONObject book = items.getJSONObject(i);
+                        JSONObject volumeInfo = book.getJSONObject("volumeInfo");
 
-                    String title = volumeInfo.getString("title");
+                        String title = volumeInfo.getString("title");
 
                     /*We check if authors are retrieved from data and loop through the JSONarray to
                     get all of them.*/
-                    if (volumeInfo.has("authors")) {
-                        JSONArray authors = volumeInfo.getJSONArray("authors");
-                        author ="";
-                        for (int y=0; y < authors.length(); y++) {
-                            author += authors.getString(y) + " ";
+                        if (volumeInfo.has("authors")) {
+                            JSONArray authors = volumeInfo.getJSONArray("authors");
+                            author ="";
+                            for (int y=0; y < authors.length(); y++) {
+                                author += authors.getString(y) + " ";
+                            }
+
+                        } else {
+                            author = "No author mentioned";
                         }
 
-                    } else {
-                        author = "No author mentioned";
-                    }
+                        if (volumeInfo.has("publisher")) {
+                            publisher = volumeInfo.getString("publisher");
 
-                    if (volumeInfo.has("publisher")) {
-                        publisher = volumeInfo.getString("publisher");
-
-                    } else {
-                        publisher = "No publisher mentioned";
-                    }
+                        } else {
+                            publisher = "No publisher mentioned";
+                        }
 
                     /*Check if pages count is retrieved from data. If not, we set pages to 0.
                     We then take care of formatting correctly TextView display in BookAdapter.*/
-                    if (volumeInfo.has("pageCount")) {
-                        pages = volumeInfo.getInt("pageCount");
-                    } else {
-                        pages = 0;
+                        if (volumeInfo.has("pageCount")) {
+                            pages = volumeInfo.getInt("pageCount");
+                        } else {
+                            pages = 0;
+                        }
+
+                        String language = volumeInfo.getString("language");
+
+                        Book volume = new Book(title, publisher, author, pages, language);
+                        books.add(volume);
                     }
 
-                    String language = volumeInfo.getString("language");
-
-                    Book volume = new Book(title, publisher, author, pages, language);
-                    books.add(volume);
+                } else {
+                    Toast.makeText(getApplicationContext(), "No book results.", Toast.LENGTH_SHORT).show();
                 }
                 return books;
 
